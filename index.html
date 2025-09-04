@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom QR code styling for a cleaner look */
+        #qrcode img {
+            border-radius: 0.5rem; /* Rounded corners for the QR code image */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Style for the color input */
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 44px;
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 2px solid theme('colors.slate.700');
+            transition: border-color 0.2s;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        input[type="color"]::-moz-color-swatch {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        input[type="color"]:hover {
+            border-color: theme('colors.blue.500');
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-300 min-h-screen flex items-center justify-center p-6 relative">
+
+    <!-- Company Logo -->
+    <div class="absolute top-4 left-4 text-xl font-bold">
+        <span class="text-blue-300">Twilight</span>
+        <span class="text-white">Lab</span>
+    </div>
+
+    <div class="flex flex-col md:flex-row items-stretch justify-center gap-8 w-full max-w-5xl">
+
+        <!-- Input Card (Left) -->
+        <div class="flex-1 bg-slate-900 p-8 rounded-2xl shadow-xl flex flex-col justify-between border border-slate-700">
+            <div>
+                <h1 class="text-3xl font-bold mb-4 text-center text-white">QR Code Generator</h1>
+                <p class="text-center mb-6">Enter text or a URL and select your options below to generate a QR code.</p>
+
+                <textarea
+                    id="qr-text"
+                    placeholder="Enter your text or URL here..."
+                    class="w-full h-40 p-4 mb-4 bg-slate-800 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors duration-200 resize-none"
+                    oninput="generateQRCode()"
+                ></textarea>
+
+                <!-- Error Correction Level Dropdown -->
+                <div class="mb-4">
+                    <label for="correction-level" class="block text-sm font-medium text-slate-400 mb-1">Error Correction Level</label>
+                    <select id="correction-level" onchange="generateQRCode()" class="w-full p-2 bg-slate-800 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                        <option value="L">Low (L)</option>
+                        <option value="M">Medium (M)</option>
+                        <option value="Q">Quartile (Q)</option>
+                        <option value="H" selected>High (H)</option>
+                    </select>
+                </div>
+                
+                <!-- Size and Upscale Factor Dropdowns -->
+                <div class="flex flex-row gap-4 mb-4">
+                    <div class="flex-1">
+                        <label for="size-select" class="block text-sm font-medium text-slate-400 mb-1">QR Code Size (px)</label>
+                        <select id="size-select" onchange="generateQRCode()" class="w-full p-2 bg-slate-800 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                            <option value="128">128 x 128</option>
+                            <option value="256" selected>256 x 256</option>
+                            <option value="512">512 x 512</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="upscale-select" class="block text-sm font-medium text-slate-400 mb-1">Download Upscale Factor</label>
+                        <select id="upscale-select" onchange="updateDownloadLink()" class="w-full p-2 bg-slate-800 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors duration-200">
+                            <option value="1">1x</option>
+                            <option value="2">2x</option>
+                            <option value="4" selected>4x</option>
+                            <option value="8">8x</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Color Pickers -->
+                <div class="flex flex-row gap-4 mb-4">
+                    <div class="flex-1">
+                        <label for="fg-color" class="block text-sm font-medium text-slate-400 mb-1">Foreground Color</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" id="fg-color" value="#1e40af" oninput="generateQRCode()" class="flex-1">
+                            <button onclick="resetFgColor()" class="py-2 px-3 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition-colors duration-200 text-sm">Reset</button>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <label for="bg-color" class="block text-sm font-medium text-slate-400 mb-1">Background Color</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" id="bg-color" value="#f0f9ff" oninput="generateQRCode()" class="flex-1">
+                            <button onclick="resetBgColor()" class="py-2 px-3 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition-colors duration-200 text-sm">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Output Card (Right) -->
+        <div class="flex-1 bg-slate-900 p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center border border-slate-700">
+            <h2 class="text-3xl font-bold mb-6 text-center text-white">Generated QR Code</h2>
+            <div id="qrcode" class="p-4 rounded-xl shadow-md transition-all duration-300">
+                <!-- QR code will be generated here -->
+            </div>
+            <a
+                id="download-btn"
+                href="#"
+                download="qrcode.png"
+                class="mt-6 hidden bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md"
+            >
+                Download QR Code
+            </a>
+        </div>
+    </div>
+
+    <!-- QR Code Library Script -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        const qrCodeContainer = document.getElementById('qrcode');
+        const qrText = document.getElementById('qr-text');
+        const downloadBtn = document.getElementById('download-btn');
+        const correctionLevelSelect = document.getElementById('correction-level');
+        const sizeSelect = document.getElementById('size-select');
+        const upscaleSelect = document.getElementById('upscale-select');
+        const fgColorInput = document.getElementById('fg-color');
+        const bgColorInput = document.getElementById('bg-color');
+        let qrCodeInstance = null;
+
+        function getCorrectionLevel() {
+            const level = correctionLevelSelect.value;
+            switch(level) {
+                case 'L': return QRCode.CorrectLevel.L;
+                case 'M': return QRCode.CorrectLevel.M;
+                case 'Q': return QRCode.CorrectLevel.Q;
+                case 'H': return QRCode.CorrectLevel.H;
+                default: return QRCode.CorrectLevel.H; // Default to High
+            }
+        }
+
+        function generateQRCode() {
+            const text = qrText.value.trim();
+            const size = parseInt(sizeSelect.value, 10);
+            
+            // Set the background color of the preview container
+            qrCodeContainer.style.backgroundColor = bgColorInput.value;
+
+            if (qrCodeInstance) {
+                qrCodeInstance.clear();
+            }
+            if (text) {
+                // Clear the container
+                qrCodeContainer.innerHTML = '';
+                
+                // Create the new QR code instance with selected options
+                qrCodeInstance = new QRCode(qrCodeContainer, {
+                    text: text,
+                    width: size,
+                    height: size,
+                    colorDark : fgColorInput.value,
+                    colorLight : bgColorInput.value,
+                    correctLevel : getCorrectionLevel()
+                });
+
+                // Update the download link after a short delay
+                setTimeout(updateDownloadLink, 100);
+            } else {
+                // Hide download button and clear QR code if text is empty
+                downloadBtn.style.display = 'none';
+                qrCodeContainer.innerHTML = `<div class="p-4 text-center text-slate-500">Enter text to generate a QR code.</div>`;
+            }
+        }
+
+        function updateDownloadLink() {
+            const qrCodeCanvas = qrCodeContainer.querySelector('canvas');
+            if (!qrCodeCanvas) {
+                downloadBtn.style.display = 'none';
+                return;
+            }
+            
+            const upscaleFactor = parseInt(upscaleSelect.value, 10);
+            const originalSize = qrCodeCanvas.width;
+            
+            // Define the padding size to match the p-4 class (16px)
+            const padding = 16;
+            
+            // Create a temporary canvas for the high-resolution download with border
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = (originalSize + 2 * padding) * upscaleFactor;
+            tempCanvas.height = (originalSize + 2 * padding) * upscaleFactor;
+            const ctx = tempCanvas.getContext('2d');
+            
+            // Fill the temporary canvas with the user-selected background color
+            ctx.fillStyle = bgColorInput.value;
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Draw the QR code onto the temporary canvas with the correct offset for the border
+            ctx.drawImage(qrCodeCanvas, padding * upscaleFactor, padding * upscaleFactor, originalSize * upscaleFactor, originalSize * upscaleFactor);
+            
+            // Get the data URL and update the download link
+            const imageDataUrl = tempCanvas.toDataURL("image/png");
+            downloadBtn.href = imageDataUrl;
+            downloadBtn.style.display = 'block';
+        }
+
+        function resetFgColor() {
+            fgColorInput.value = '#1e40af';
+            generateQRCode();
+        }
+
+        function resetBgColor() {
+            bgColorInput.value = '#f0f9ff';
+            generateQRCode();
+        }
+
+        // Initial generation on load
+        window.onload = generateQRCode;
+    </script>
+
+</body>
+</html>
